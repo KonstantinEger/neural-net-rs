@@ -5,6 +5,9 @@ authors = ["KonstantinEger <35273325+KonstantinEger@users.noreply.github.com>"]
 edition = "2018"
 license = "MIT"
 
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Oz", "--enable-mutable-globals"]
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 

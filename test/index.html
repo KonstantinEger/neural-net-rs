@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<script type="module">
+		import init, { NeuralNet, Matrix } from '../pkg/neural_net_rs.js';
+
+		init().then(() => {
+			const nn = new NeuralNet();
+			const m = new Matrix(4, 4);
+		});
+	</script>
+</body>
+</html>
