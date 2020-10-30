@@ -1,0 +1,19 @@
+[package]
+name = "neural-net-rs"
+version = "0.1.0"
+authors = ["KonstantinEger <35273325+KonstantinEger@users.noreply.github.com>"]
+edition = "2018"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies]
+wasm-bindgen = "0.2.63"
+console_error_panic_hook = { version = "0.1.6", optional = true }
+
+[profile.release]
+opt-level = "s"
