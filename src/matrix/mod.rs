@@ -4,6 +4,7 @@ use std::convert::TryInto;
 /// A matrix is like a table of `f64` numbers. Each item has a position
 /// and value.
 #[wasm_bindgen]
+#[derive(Clone)]
 pub struct Matrix
 {
 	rows: u32,
@@ -15,14 +16,14 @@ pub struct Matrix
 #[wasm_bindgen]
 impl Matrix
 {
-	/// Returns a new instance of a matrix. It's initialized with
+	/// Returns a new instance of a matrix: `rows`x`cols`. It's initialized with
 	/// all `0f64`.
 	#[wasm_bindgen(constructor)]
 	pub fn new(rows: u32, cols: u32) -> Self
 	{
 		Self {
 			rows, cols,
-			data: vec![0f64; (rows * cols) as usize]
+			data: vec![0_f64; (rows * cols) as usize]
 		}
 	}
 
@@ -139,16 +140,11 @@ impl Matrix
 	/// Could fail because because columns of `a` (self) must match
 	/// rows of `b` (other).
 	/// ```
-	/// let mut a = neural_net_rs::Matrix::new(2, 3);
-	/// let a_cols = a.cols();
-	/// a.map(|_, row, col| ((row * a_cols + col) + 1) as f64);	// |1, 2, 3|
-	/// assert_eq!(a.data(), vec![1., 2., 3., 4., 5., 6.]);		// |4, 5, 6|
-	/// 
-	/// let mut b = neural_net_rs::Matrix::new(3, 2);
-	/// let b_cols = b.cols();									// | 7,  8|
-	/// b.map(|_, row, col| ((row * b_cols + col) + 7) as f64);	// | 9, 10|
-	/// assert_eq!(b.data(), vec![7., 8., 9., 10., 11., 12.]);	// |11, 12|
-	/// 
+	/// let a = neural_net_rs::Matrix::from(2, 3, vec![1., 2., 3., 4., 5., 6.]).unwrap();
+	/// let b = neural_net_rs::Matrix::from(3, 2, vec![7., 8., 9., 10., 11., 12.]).unwrap();
+	/// // |1, 2, 3|   | 7,  8|
+	/// // |4, 5, 6| X | 9, 10|
+	/// //             |11, 12|
 	/// let c = neural_net_rs::Matrix::mult(&a, &b).unwrap();
 	/// assert_eq!(c.rows(), 2);
 	/// assert_eq!(c.cols(), 2);
@@ -163,7 +159,7 @@ impl Matrix
 		let mut result = Matrix::new(a.rows(), b.cols());
 
 		result.map(|_, row, col| {
-			let mut sum = 0f64;
+			let mut sum = 0_f64;
 			for k in 0..a.cols() {
 				sum = sum + a.get(row, k) * b.get(k, col);
 			}
@@ -175,7 +171,8 @@ impl Matrix
 }
 
 /// Methods in this `impl` are **not** accessable from JavaScript.
-impl Matrix {
+impl Matrix
+{
 	/// Maps over each position in the matrix (starting top-left
 	/// going left to right). A callback is called on each item
 	/// of the matrix with the current `value`, its `row` and
@@ -189,5 +186,85 @@ impl Matrix {
 				self.data[idx] = cb(self.data[idx], i, j);
 			}
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests
+{
+	use super::Matrix;
+
+	#[test]
+	fn test_matrix_new()
+	{
+		let m = Matrix::new(3, 4);
+		assert_eq!(m.rows(), 3);
+		assert_eq!(m.cols(), 4);
+		assert_eq!(m.data(), vec![0_f64; 12]);
+	}
+
+	#[test]
+	fn test_matrix_from()
+	{
+		let v = vec![1., 2., 3., 4., 5., 6.];
+		let m1 = Matrix::from(2, 3, v.clone()).unwrap();
+		let m2 = Matrix::from(3, 2, v.clone()).unwrap();
+		assert_eq!(m1.rows(), 2);
+		assert_eq!(m1.cols(), 3);
+		assert_eq!(m1.data(), v);
+		assert_eq!(m2.data(), v);
+	}
+
+	#[test]
+	fn test_getters()
+	{
+		let mut m = Matrix::new(2, 3);
+		m.map(|_, r, c| (r + c) as f64);
+		assert_eq!(m.rows(), 2); // |0, 1, 2|
+		assert_eq!(m.cols(), 3); // |1, 2, 3|
+		assert_eq!(m.data(), vec![0., 1., 2., 1., 2., 3.]);
+		assert_eq!(m.get(0, 1), 1.);
+		assert_eq!(m.get(1, 1), 2.);
+	}
+
+	#[test]
+	fn test_scale()
+	{
+		let mut m = Matrix::from(2, 2, vec![1., 2., 3., 4.]).unwrap();
+		m.scale(2.);
+		assert_eq!(m.data(), vec![2., 4., 6., 8.]);
+	}
+
+	#[test]
+	fn test_calc_idx()
+	{
+		let m = Matrix::new(3, 4);
+		// |0, 1,  2,  3|
+		// |4, 5,  6,  7|
+		// |8, 9, 10, 12|
+		assert_eq!(m.calc_idx(0, 0), 0);
+		assert_eq!(m.calc_idx(0, 2), 2);
+		assert_eq!(m.calc_idx(1, 1), 5);
+		assert_eq!(m.calc_idx(2, 2), 10);
+	}
+
+	#[test]
+	fn test_mult()
+	{
+		let a = Matrix::from(2, 3, vec![5., 1., 2., 3., 2., 6.]).unwrap();
+		let b = Matrix::from(3, 2, vec![8., 7., 4., 4., 5., 1.]).unwrap();
+
+		let c = Matrix::mult(&a, &b).unwrap();
+		assert_eq!(c.rows(), 2);
+		assert_eq!(c.cols(), 2);
+		assert_eq!(c.data(), vec![54., 41., 62., 35.]);
+	}
+
+	#[test]
+	fn test_map()
+	{
+		let mut m = Matrix::from(2, 3, vec![1., 2., 3., 4., 5., 6.]).unwrap();
+		m.map(|val, r, c| (val * (c * r) as f64));
+		assert_eq!(m.data(), vec![0., 0., 0., 0., 5., 12.]);
 	}
 }
