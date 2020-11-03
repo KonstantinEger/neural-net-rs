@@ -195,7 +195,7 @@ mod tests
 	use super::Matrix;
 
 	#[test]
-	fn test_matrix_new()
+	fn matrix_new()
 	{
 		let m = Matrix::new(3, 4);
 		assert_eq!(m.rows(), 3);
@@ -204,7 +204,7 @@ mod tests
 	}
 
 	#[test]
-	fn test_matrix_from()
+	fn matrix_from()
 	{
 		let v = vec![1., 2., 3., 4., 5., 6.];
 		let m1 = Matrix::from(2, 3, v.clone()).unwrap();
@@ -216,7 +216,7 @@ mod tests
 	}
 
 	#[test]
-	fn test_getters()
+	fn getters()
 	{
 		let mut m = Matrix::new(2, 3);
 		m.map(|_, r, c| (r + c) as f64);
@@ -228,7 +228,7 @@ mod tests
 	}
 
 	#[test]
-	fn test_scale()
+	fn scale()
 	{
 		let mut m = Matrix::from(2, 2, vec![1., 2., 3., 4.]).unwrap();
 		m.scale(2.);
@@ -236,7 +236,7 @@ mod tests
 	}
 
 	#[test]
-	fn test_calc_idx()
+	fn calc_idx()
 	{
 		let m = Matrix::new(3, 4);
 		// |0, 1,  2,  3|
@@ -249,7 +249,7 @@ mod tests
 	}
 
 	#[test]
-	fn test_mult()
+	fn mult()
 	{
 		let a = Matrix::from(2, 3, vec![5., 1., 2., 3., 2., 6.]).unwrap();
 		let b = Matrix::from(3, 2, vec![8., 7., 4., 4., 5., 1.]).unwrap();
@@ -261,7 +261,7 @@ mod tests
 	}
 
 	#[test]
-	fn test_map()
+	fn map()
 	{
 		let mut m = Matrix::from(2, 3, vec![1., 2., 3., 4., 5., 6.]).unwrap();
 		m.map(|val, r, c| (val * (c * r) as f64));

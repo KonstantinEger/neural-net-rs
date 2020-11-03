@@ -65,13 +65,15 @@ mod tests
 	use super::NeuralNet;
 
 	#[test]
-	fn test_nn_new() {
+	fn nn_new()
+	{
 		let nn = NeuralNet::new(2, vec![3, 4, 5], 2);
 		assert_eq!(nn.hidden_weights.len(), 4);
 	}
 
 	#[test]
-	fn test_new_perceptron() {
+	fn new_perceptron()
+	{
 		let nn = NeuralNet::new(2, Vec::new(), 1);
 		assert_eq!(nn.hidden_weights.len(), 1);
 	}
