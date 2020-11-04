@@ -150,7 +150,7 @@ impl Matrix
 	/// assert_eq!(c.cols(), 2);
 	/// assert_eq!(c.data(), vec![58., 64., 139., 154.]);
 	/// ```
-	pub fn mult(a: &Matrix, b: &Matrix) -> Result<Matrix, JsValue>
+	pub fn mult(a: &Matrix, b: Matrix) -> Result<Matrix, JsValue>
 	{
 		if a.cols() != b.rows() {
 			return Err(JsValue::from_str("Error: columns of left-hand-side must match rows of right-hand-side"));
