@@ -1,9 +1,5 @@
 name: Rust
 
-uses: jetli/wasm-pack-action@v0.3.0
-with:
-  version: "latest"
-
 on:
   push:
     branches: [ main ]
@@ -20,6 +16,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: jetli/wasm-pack-action@v0.3.0
     - name: Build
       run: wasm-pack build --target web
     - name: Run tests
