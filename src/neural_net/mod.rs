@@ -59,6 +59,18 @@ impl NeuralNet
 		}
 	}
 
+	/// The feed_forward algorithm feeds data provided as an input
+	/// through the neural network. The input data should be structured
+	/// as a vector of floats with length of the amount of input
+	/// nodes the network has. **The program panics if this
+	/// condition is not met.** This algorithm can be seen as the
+	/// networks 'guess' on some data. The output is a vector where
+	/// the length equals the amount of output nodes the network has.
+	/// ```
+	/// let nn = neural_net_rs::NeuralNet::new(2, vec![3, 4], 3);
+	/// let guess = nn.feed_forward(vec![0.5, 1.0]);
+	/// assert_eq!(guess.len(), 3);
+	/// ```
 	pub fn feed_forward(&self, input_data: Vec<f64>) -> Vec<f64>
 	{
 		let inputs = Matrix::from(input_data.len().try_into().unwrap(), 1, input_data).unwrap();
