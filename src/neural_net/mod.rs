@@ -1,4 +1,4 @@
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::prelude::{ JsValue, wasm_bindgen };
 use std::convert::TryInto;
 use crate::Matrix;
 
@@ -8,6 +8,7 @@ use crate::Matrix;
 /// "flows".
 #[wasm_bindgen]
 pub struct NeuralNet {
+	input_nodes: u32,
 	hidden_nodes: Vec<u32>,
 	hidden_weights: Vec<Matrix>,
 	learning_rate: f64,
@@ -52,6 +53,7 @@ impl NeuralNet
 
 
 		NeuralNet {
+			input_nodes,
 			learning_rate: 0.1_f64,
 			bias: 1,
 			hidden_nodes,
@@ -68,11 +70,15 @@ impl NeuralNet
 	/// the length equals the amount of output nodes the network has.
 	/// ```
 	/// let nn = neural_net_rs::NeuralNet::new(2, vec![3, 4], 3);
-	/// let guess = nn.feed_forward(vec![0.5, 1.0]);
+	/// let guess = nn.feed_forward(vec![0.5, 1.0]).unwrap();
 	/// assert_eq!(guess.len(), 3);
 	/// ```
-	pub fn feed_forward(&self, input_data: Vec<f64>) -> Vec<f64>
+	pub fn feed_forward(&self, input_data: Vec<f64>) -> Result<Vec<f64>, JsValue>
 	{
+		if input_data.len() != self.input_nodes.try_into().unwrap() {
+			return Err(JsValue::from_str("length of input-data doesn't equal number of input nodes."));
+		}
+
 		let inputs = Matrix::from(input_data.len().try_into().unwrap(), 1, input_data).unwrap();
 		let mut weights_iter = self.hidden_weights.iter();
 		
@@ -81,7 +87,7 @@ impl NeuralNet
 		hidden.map(|v, _, _| activation_func::sigmoid(v));
 
 		if self.hidden_nodes.len() == 0 {
-			return hidden.data();
+			return Ok(hidden.data());
 		}
 
 		for weights in weights_iter {
@@ -90,7 +96,7 @@ impl NeuralNet
 			hidden.map(|v, _, _| activation_func::sigmoid(v));
 		}
 
-		hidden.data()
+		Ok(hidden.data())
 	}
 }
 
@@ -129,8 +135,17 @@ mod tests
 	#[test]
 	fn feed_forward() {
 		let nn = NeuralNet::new(2, vec![3, 4], 2);
-		let result = nn.feed_forward(vec![1., 1.]);
+		let result = nn.feed_forward(vec![1., 1.]).unwrap();
 		assert_eq!(result.len(), 2);
+	}
+
+    #[test]
+    #[should_panic]
+	fn wrong_ff_input_should_fail() {
+		let nn = NeuralNet::new(2, vec![3, 4], 3);
+		if let Err(_) = nn.feed_forward(vec![1.]) {
+			panic!("feed_forward panics with wrong input.");
+		}
 	}
 
 	#[test]
